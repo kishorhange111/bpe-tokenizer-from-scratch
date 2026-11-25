@@ -70,4 +70,80 @@ pip install -e ".[bench]"
 python -m bpetok.bench --out results  # CPU benchmark
 ```
 
-**Results are pending** from the benchmark run.
+## Results (CPU: Intel i5-1135G7 laptop, Python 3.12, single runs)
+
+The output is in [`results/bench.md`](results/bench.md) and
+[`results/bench.json`](results/bench.json). Every number below comes from a single run on a
+laptop, so differences under about 2× in the small timings are noise.
+
+### Training: 19.9 MB of TinyStories, 12,642 unique pre-tokens
+
+| vocab | merges | fast (s) | naive (s) | speed-up | identical merges |
+|---|---|---|---|---|---|
+| 512 | 256 | 0.4 | 9.9 | 27× | yes |
+| 1,024 | 768 | 0.6 | 22.8 | 41× | yes |
+| 2,048 | 1,792 | 2.0 | 50.2 | 25× | yes |
+| 4,096 | 3,840 | 0.6 | 110.7 | 179× | yes |
+| 8,192 | 7,936 | 0.7 | 215.9 | 290× | yes |
+| 16,384 | 13,045 | 1.2 | 364.5 | **305×** | yes |
+
+- **The incremental trainer is 25–305× faster, and its merges are identical at every
+  size.** Naive time grows linearly with the number of merges, since each one rescans
+  every word. The fast trainer's cost per merge shrinks, because late merges are rare
+  pairs that occur in only a few words.
+- **Training stops at 13,045 merges.** After that, no pair occurs twice. TinyStories has a
+  small vocabulary, so a 32,768-token target gives the same result as 16,384, and its row is
+  left out of this table.
+- Pre-tokenizing the corpus takes 2.6 s, so for both trainers the regex costs more than the
+  merging. For reference, Hugging Face's Rust trainer, which pre-tokenizes in parallel, took
+  2.5–6.6 s end to end. That is not like-for-like with the merge-only times above.
+
+### Encoding: GPT-2's merges, output identical to tiktoken on every byte
+
+| corpus | MB | tokens | heap + cache | heap | simple | tiktoken (Rust) |
+|---|---|---|---|---|---|---|
+| prose (TinyStories test) | 2.27 | 564,837 | **6.9 MB/s** | 1.3 | 1.9 | 18.2 |
+| code (stdlib, held out) | 0.62 | 285,720 | **4.2 MB/s** | 1.5 | 1.9 | 10.6 |
+
+- **On normal text the cache matters far more than the algorithm.** Repeated words skip BPE
+  entirely, which makes the encoder 3–5× faster. Without the cache, the heap encoder is a
+  bit *slower* than the simple one, because pieces are short (a word or two) and the
+  heap's bookkeeping costs more than an `O(n²)` scan over a handful of bytes.
+- Pure Python ends up 2.5–2.6× slower than tiktoken's Rust.
+
+### One long pre-token: n random letters with no spaces
+
+| n | simple | heap | tiktoken (Rust) |
+|---|---|---|---|
+| 1,024 | 0.040 s | 0.001 s | 0.000 s |
+| 4,096 | 0.538 s | 0.003 s | 0.001 s |
+| 16,384 | 12.1 s | 0.023 s | 0.002 s |
+| 65,536 | **149.6 s** | **0.091 s** | 0.008 s |
+| 262,144 | – | 0.61 s | 0.054 s |
+
+**This is where the heap matters.** The simple encoder is quadratic: 4× the input takes about
+12–23× the time, reaching 2.5 minutes for 64 KiB. The heap encoder grows 4–8× per 4× of input, close to
+linear, taking 0.09 s for 64 KiB, which is **1,600× faster**. Inputs like this are real: minified
+JavaScript, base64, hex dumps and DNA, or text crafted to stall a tokenizer. tiktoken copes
+here too.
+
+### Compression: bytes per token on held-out text (higher is better)
+
+| tokenizer | prose | code |
+|---|---|---|
+| BPE-8192 trained on prose, GPT-2 pattern | 4.06 | 1.88 |
+| BPE-8192 trained on prose, cl100k pattern | 4.18 | 1.62 |
+| BPE-8192 trained on code, GPT-2 pattern | 2.77 | 3.69 |
+| BPE-8192 trained on code, cl100k pattern | 2.77 | 3.67 |
+| GPT-2 (50,257 tokens) | 4.02 | 2.16 |
+| cl100k_base (100,277 tokens) | 4.15 | 3.91 |
+
+- **The training domain matters more than vocabulary size.** An 8k vocabulary trained on
+  code compresses code 1.7× better than GPT-2's 50k (3.69 against 2.16 bytes per token).
+  GPT-2's training data had little code. On TinyStories, the prose-trained 8k vocabulary matches GPT-2's 50k
+  (4.06 against 4.02), because this prose is simple.
+- **The pattern matters less than the data.** cl100k's pattern helps on prose (4.18 against
+  4.06) and hurts on code when trained on prose (1.62 against 1.88). Trained on code, the
+  two patterns are within 1%.
+- cl100k_base, with 100k tokens trained on broad data including code, is the best
+  all-rounder here (4.15 on prose, 3.91 on code).
