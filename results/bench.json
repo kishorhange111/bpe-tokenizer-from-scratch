@@ -1,0 +1,158 @@
+{
+ "cpu": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+ "python": "3.12.14",
+ "train": {
+  "pretokenize_s": 2.5834977269987576,
+  "unique_words": 12642,
+  "corpus_MB": 19.852425,
+  "rows": [
+   {
+    "vocab": 512,
+    "fast_s": 0.3600356719980482,
+    "merges": 256,
+    "naive_s": 9.853470271998958,
+    "identical": true,
+    "hf_s": 2.4782376719995227
+   },
+   {
+    "vocab": 1024,
+    "fast_s": 0.5602441539995198,
+    "merges": 768,
+    "naive_s": 22.83930601999964,
+    "identical": true,
+    "hf_s": 4.73989062200053
+   },
+   {
+    "vocab": 2048,
+    "fast_s": 1.979898420999234,
+    "merges": 1792,
+    "naive_s": 50.172390944000654,
+    "identical": true,
+    "hf_s": 3.0134328869971796
+   },
+   {
+    "vocab": 4096,
+    "fast_s": 0.6170879259989306,
+    "merges": 3840,
+    "naive_s": 110.73354631700204,
+    "identical": true,
+    "hf_s": 4.4654535519985075
+   },
+   {
+    "vocab": 8192,
+    "fast_s": 0.7445861409978534,
+    "merges": 7936,
+    "naive_s": 215.86775859099725,
+    "identical": true,
+    "hf_s": 5.115381714997056
+   },
+   {
+    "vocab": 16384,
+    "fast_s": 1.1955389019967697,
+    "merges": 13045,
+    "naive_s": 364.4959685319991,
+    "identical": true,
+    "hf_s": 6.56650008699944
+   },
+   {
+    "vocab": 32768,
+    "fast_s": 1.2793977319997794,
+    "merges": 13045,
+    "naive_s": 288.75294244100223,
+    "identical": true,
+    "hf_s": 5.695566827998846
+   }
+  ]
+ },
+ "encode": [
+  {
+   "corpus": "prose (TinyStories test)",
+   "MB": 2.271735,
+   "tokens": 564837,
+   "tiktoken_MBps": 18.22853644339462,
+   "heap+cache_MBps": 6.91149838689716,
+   "heap_MBps": 1.3176058048171706,
+   "simple_MBps": 1.8547809962158217,
+   "identical_to_tiktoken": true
+  },
+  {
+   "corpus": "code",
+   "MB": 0.617908,
+   "tokens": 285720,
+   "tiktoken_MBps": 10.63358772901845,
+   "heap+cache_MBps": 4.2276290199503155,
+   "heap_MBps": 1.4889256402431823,
+   "simple_MBps": 1.8469263027832648,
+   "identical_to_tiktoken": true
+  }
+ ],
+ "long": [
+  {
+   "n": 256,
+   "tiktoken_s": 6.841600043117069e-05,
+   "heap_s": 0.0002178249997086823,
+   "simple_s": 0.0015312869982153643
+  },
+  {
+   "n": 1024,
+   "tiktoken_s": 0.0001558500007377006,
+   "heap_s": 0.0008337750005011912,
+   "simple_s": 0.040323617999092676
+  },
+  {
+   "n": 4096,
+   "tiktoken_s": 0.0005463989982672501,
+   "heap_s": 0.003484353997919243,
+   "simple_s": 0.5376930160018674
+  },
+  {
+   "n": 16384,
+   "tiktoken_s": 0.002141484001185745,
+   "heap_s": 0.02281584799857228,
+   "simple_s": 12.146479171002284
+  },
+  {
+   "n": 65536,
+   "tiktoken_s": 0.008385282002564054,
+   "heap_s": 0.09145150399854174,
+   "simple_s": 149.59396836700034
+  },
+  {
+   "n": 262144,
+   "tiktoken_s": 0.05440296900269459,
+   "heap_s": 0.6112409760025912
+  }
+ ],
+ "compression": [
+  {
+   "tokenizer": "BPE-8192 on prose, gpt2 pattern",
+   "prose": 4.060389249437431,
+   "code": 1.882138647156116
+  },
+  {
+   "tokenizer": "BPE-8192 on prose, cl100k pattern",
+   "prose": 4.184506310647421,
+   "code": 1.6159738476626349
+  },
+  {
+   "tokenizer": "BPE-8192 on code, gpt2 pattern",
+   "prose": 2.765070601509525,
+   "code": 3.6877480499173414
+  },
+  {
+   "tokenizer": "BPE-8192 on code, cl100k pattern",
+   "prose": 2.768062434887504,
+   "code": 3.6723404255319148
+  },
+  {
+   "tokenizer": "gpt2 (50,257)",
+   "prose": 4.02193022057691,
+   "code": 2.162634747305054
+  },
+  {
+   "tokenizer": "cl100k_base (100,277)",
+   "prose": 4.148378437602717,
+   "code": 3.90739733650356
+  }
+ ]
+}
